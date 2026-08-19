@@ -18,6 +18,9 @@ export class CookieSessionStore implements SessionCookieStore {
 
   async clear(): Promise<void> {
     const store = await cookies()
-    store.delete(SESSION_COOKIE_NAME)
+    store.set(SESSION_COOKIE_NAME, "", {
+      ...getSessionCookieOptions(new Date(0)),
+      maxAge: 0,
+    })
   }
 }

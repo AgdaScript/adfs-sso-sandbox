@@ -1,7 +1,7 @@
 import "server-only"
 
 import { SESSION_DURATION_MS } from "../config"
-import type { SessionPayload, UserId } from "../domain"
+import type { IssuedSession, SessionPayload, User } from "../domain"
 import type {
   SessionCipher,
   SessionCookieStore,
@@ -14,10 +14,20 @@ export class CookieSessionService implements SessionService {
     private readonly cookies: SessionCookieStore,
   ) {}
 
-  async create(userId: UserId): Promise<void> {
+  async issue(user: User): Promise<IssuedSession> {
     const expiresAt = new Date(Date.now() + SESSION_DURATION_MS)
-    const token = await this.cipher.encrypt({ userId })
-    await this.cookies.write(token, expiresAt)
+    const token = await this.cipher.encrypt({
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+    })
+
+    return { token, expiresAt }
+  }
+
+  async create(user: User): Promise<void> {
+    const issued = await this.issue(user)
+    await this.cookies.write(issued.token, issued.expiresAt)
   }
 
   async read(): Promise<SessionPayload | null> {

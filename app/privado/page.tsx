@@ -9,7 +9,7 @@ export default async function PrivatePage() {
     <PageFrame
       badge="Privada"
       title="Página privada"
-      description="Esta rota só é renderizada com uma sessão válida. O proxy faz um redirect otimista; a Data Access Layer confirma o utilizador antes de devolver dados."
+      description="Esta rota só é renderizada depois do ADFS validar as credenciais e a Data Access Layer confirmar a sessão local."
     >
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
         <dl className="grid gap-3 text-sm">

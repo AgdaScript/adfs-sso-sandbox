@@ -1,44 +1,28 @@
-Sandbox Next.js com autenticação simples, responsabilidades isoladas (SOLID) e duas páginas: pública e privada. A porta `Authenticator` está pronta para ser trocada por ADFS mais tarde.
+Sandbox Next.js com SSO SAML contra ADFS. O protocolo SAML fica encapsulado atrás de portas (SOLID); as páginas só conhecem login/sessão.
+
+Fluxo: **página pública → login ADFS (credenciais do IdP) → página privada**.
 
 ## Arranque
 
-Copie o ficheiro de ambiente e gere um segredo de sessão:
+1. Copie `.env.example` para `.env.local` e preencha o ADFS (entry point, issuer, certificado, callback público).
+2. No ADFS, o Relying Party deve apontar o ACS para `/api/auth/callback/adfs` (o mesmo valor de `ADFS_CALLBACK_URL`).
+3. Metadata do SP: `/api/auth/adfs/metadata`
+4. `npm run dev` (ou `pnpm run dev`) e use a URL pública (ngrok) definida em `APP_URL` / `NEXTAUTH_URL`.
 
-```bash
-cp .env.example .env.local
-openssl rand -base64 32
-```
+- Pública: `/`
+- Login: `/login` → redireciona ao ADFS
+- Privada: `/privado`
 
-Coloque o valor gerado em `SESSION_SECRET` no `.env.local` e execute:
-
-```bash
-npm run dev
-```
-
-Abra [http://localhost:3000](http://localhost:3000).
-
-Login de demo: `demo@local` / `demo123`
-
-- Página pública: `/`
-- Página privada: `/privado` (exige sessão)
-- Login: `/login`
-
-## Estrutura de auth
-
-As páginas não acedem a cookies nem a JWT. Cada módulo tem uma responsabilidade.
+## Estrutura
 
 | Camada | Papel |
 | --- | --- |
-| `lib/auth/ports.ts` | Contratos (Authenticator, SessionService, stores) |
-| `lib/auth/adapters/` | JWT, cookies, utilizadores em memória, verificação de password |
-| `lib/auth/use-cases/` | Sign-in e sign-out |
-| `lib/auth/dal.ts` | Verificação segura da sessão nos Server Components |
+| `lib/auth/ports.ts` | Contrato `SsoIdentityProvider` + `SessionService` |
+| `lib/auth/adapters/adfs-saml-provider.ts` | `@node-saml/node-saml` (SAML 2.0 / ADFS) |
+| `lib/auth/use-cases/` | Iniciar SSO e completar o ACS |
+| `lib/auth/dal.ts` | Verificação segura da sessão nas páginas |
+| `app/api/auth/adfs/login` | Redirect para o IdP |
+| `app/api/auth/callback/adfs` | POST ACS: valida asserção e cria cookie |
 | `proxy.ts` | Redirect otimista — não é a fronteira de segurança |
-| `app/actions/auth.ts` | Adaptador HTTP fino (formulários) |
 
-Para passar a ADFS, implemente `Authenticator` e mantenha as páginas, a DAL e o fluxo de cookie de sessão.
-
-
-
-
-ngrok http 3000 --url=disorder-enticing-pouncing.ngrok-free.dev
+Auth.js / NextAuth não trazem SAML de primeira linha. `@node-saml/node-saml` é a biblioteca Node usada para ADFS; aqui entra só como adaptador, sem as páginas dependerem dela.

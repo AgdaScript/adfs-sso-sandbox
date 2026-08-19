@@ -10,7 +10,7 @@ export default async function PublicPage() {
     <PageFrame
       badge="Pública"
       title="Página pública"
-      description="Qualquer pessoa pode ver este conteúdo. A sessão, se existir, é lida apenas para personalizar a UI — esta rota não exige autenticação."
+      description="Qualquer pessoa pode ver este conteúdo. Para a área privada, entre com as credenciais do ADFS."
     >
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
         {user ? (

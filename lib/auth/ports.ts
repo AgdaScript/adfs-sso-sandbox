@@ -1,20 +1,15 @@
-import type { Credentials, SessionPayload, User, UserId } from "./domain"
+import type {
+  IssuedSession,
+  SessionPayload,
+  SsoCallbackInput,
+  User,
+  UserId,
+} from "./domain"
 
-export type UserCredentials = {
-  user: User
-  passwordHash: string
-}
-
-export interface Authenticator {
-  authenticate(credentials: Credentials): Promise<User | null>
-}
-
-export interface UserReader {
-  findById(id: UserId): Promise<User | null>
-}
-
-export interface CredentialLookup {
-  findCredentialsByEmail(email: string): Promise<UserCredentials | null>
+export interface SsoIdentityProvider {
+  createLoginRedirect(relayState: string): Promise<string>
+  authenticateResponse(input: SsoCallbackInput): Promise<User>
+  getServiceProviderMetadata(): string
 }
 
 export interface SessionCipher {
@@ -29,7 +24,10 @@ export interface SessionCookieStore {
 }
 
 export interface SessionService {
-  create(userId: UserId): Promise<void>
+  issue(user: User): Promise<IssuedSession>
+  create(user: User): Promise<void>
   read(): Promise<SessionPayload | null>
   destroy(): Promise<void>
 }
+
+export type { User, UserId, SessionPayload, SsoCallbackInput, IssuedSession }

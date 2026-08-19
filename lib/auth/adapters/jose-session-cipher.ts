@@ -12,6 +12,23 @@ function getEncodedKey() {
   return encoder.encode(getSessionSecret())
 }
 
+function asSessionPayload(value: Record<string, unknown>): SessionPayload | null {
+  const userId = value.userId
+  const name = value.name
+  const email = value.email
+
+  if (
+    typeof userId !== "string" ||
+    userId.length === 0 ||
+    typeof name !== "string" ||
+    typeof email !== "string"
+  ) {
+    return null
+  }
+
+  return { userId, name, email }
+}
+
 export class JoseSessionCipher implements SessionCipher {
   async encrypt(payload: SessionPayload): Promise<string> {
     return new SignJWT(payload)
@@ -30,13 +47,7 @@ export class JoseSessionCipher implements SessionCipher {
       const { payload } = await jwtVerify(token, getEncodedKey(), {
         algorithms: ["HS256"],
       })
-      const userId = payload.userId
-
-      if (typeof userId !== "string" || userId.length === 0) {
-        return null
-      }
-
-      return { userId }
+      return asSessionPayload(payload as Record<string, unknown>)
     } catch {
       return null
     }

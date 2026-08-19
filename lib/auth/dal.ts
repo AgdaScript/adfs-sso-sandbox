@@ -15,13 +15,11 @@ export const getCurrentUser = cache(async (): Promise<PublicUser | null> => {
     return null
   }
 
-  const user = await auth.users.findById(session.userId)
-
-  if (!user) {
-    return null
-  }
-
-  return toPublicUser(user)
+  return toPublicUser({
+    id: session.userId,
+    name: session.name,
+    email: session.email,
+  })
 })
 
 export async function requireUser(): Promise<PublicUser> {
