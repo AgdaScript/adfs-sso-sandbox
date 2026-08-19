@@ -1,5 +1,7 @@
 export type UserId = string
 
+export type SamlClaims = Record<string, string | string[]>
+
 export type User = {
   id: UserId
   name: string
@@ -7,6 +9,7 @@ export type User = {
   nameID: string
   nameIDFormat: string
   sessionIndex?: string
+  claims: SamlClaims
 }
 
 export type SessionPayload = {
@@ -16,12 +19,14 @@ export type SessionPayload = {
   nameID: string
   nameIDFormat: string
   sessionIndex?: string
+  claims: SamlClaims
 }
 
 export type PublicUser = {
   id: UserId
   name: string
   email: string
+  claims: SamlClaims
 }
 
 export type SloSubject = {

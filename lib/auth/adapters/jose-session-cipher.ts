@@ -39,7 +39,26 @@ function asSessionPayload(value: Record<string, unknown>): SessionPayload | null
       typeof value.sessionIndex === "string" && value.sessionIndex
         ? value.sessionIndex
         : undefined,
+    claims: asClaims(value.claims),
   }
+}
+
+function asClaims(value: unknown): SessionPayload["claims"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {}
+  }
+
+  const claims: SessionPayload["claims"] = {}
+
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof raw === "string") {
+      claims[key] = raw
+    } else if (Array.isArray(raw) && raw.every((item) => typeof item === "string")) {
+      claims[key] = raw
+    }
+  }
+
+  return claims
 }
 
 export class JoseSessionCipher implements SessionCipher {

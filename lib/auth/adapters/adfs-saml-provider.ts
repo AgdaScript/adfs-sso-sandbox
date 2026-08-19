@@ -7,6 +7,7 @@ import { SsoAuthenticationError } from "../errors"
 import type { SsoIdentityProvider } from "../ports"
 import { LOGIN_PATH } from "../config"
 import type { AdfsProfileMapper } from "./adfs-profile-mapper"
+import { withRequestedAttributes } from "./sp-metadata"
 
 export class AdfsSamlIdentityProvider implements SsoIdentityProvider {
   constructor(
@@ -92,6 +93,6 @@ export class AdfsSamlIdentityProvider implements SsoIdentityProvider {
   }
 
   getServiceProviderMetadata(): string {
-    return this.saml.generateServiceProviderMetadata(null)
+    return withRequestedAttributes(this.saml.generateServiceProviderMetadata(null))
   }
 }

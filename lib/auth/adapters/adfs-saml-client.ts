@@ -18,6 +18,7 @@ export function createAdfsSamlClient(config: AdfsRuntimeConfig): SAML {
     disableRequestedAuthnContext: true,
     wantAssertionsSigned: true,
     wantAuthnResponseSigned: false,
+    attributeConsumingServiceIndex: "1",
     acceptedClockSkewMs: 5 * 60 * 1000,
     signatureAlgorithm: "sha256",
     digestAlgorithm: "sha256",

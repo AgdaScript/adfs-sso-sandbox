@@ -23,6 +23,7 @@ export class CookieSessionService implements SessionService {
       nameID: user.nameID,
       nameIDFormat: user.nameIDFormat,
       sessionIndex: user.sessionIndex,
+      claims: user.claims,
     })
 
     return { token, expiresAt }

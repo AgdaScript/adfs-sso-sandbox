@@ -19,6 +19,7 @@ export const getCurrentUser = cache(async (): Promise<PublicUser | null> => {
     id: session.userId,
     name: session.name,
     email: session.email,
+    claims: session.claims ?? {},
   })
 })
 

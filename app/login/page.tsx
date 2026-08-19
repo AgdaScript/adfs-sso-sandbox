@@ -20,8 +20,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     >
       {error ? (
         <p className="text-sm text-red-600 dark:text-red-400" role="alert">
-          Não foi possível autenticar com o ADFS. Confirme o Relying Party, o
-          callback e o certificado.
+          Não foi possível autenticar com o ADFS. A asserção chegou, mas sem
+          NameID nem email — acrescente essas claims nas Issuance Transform
+          Rules do Relying Party.
         </p>
       ) : null}
 

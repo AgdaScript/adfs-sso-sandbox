@@ -10,6 +10,21 @@ import { auth } from "@/lib/auth/container"
 
 export const runtime = "nodejs"
 
+function logRawAdfsResponse(samlResponse: string, relayState: string) {
+  let xml = ""
+
+  try {
+    xml = Buffer.from(samlResponse, "base64").toString("utf8")
+  } catch {
+    xml = "(não foi possível descodificar o Base64)"
+  }
+
+  console.log("[ADFS] resposta crua (antes da sessão)")
+  console.log("[ADFS] RelayState:", relayState)
+  console.log("[ADFS] SAMLResponse Base64:", samlResponse)
+  console.log("[ADFS] SAMLResponse XML:\n", xml)
+}
+
 function loginErrorRedirect() {
   const loginUrl = new URL(LOGIN_PATH, getAppBaseUrl())
   loginUrl.searchParams.set("error", "sso")
@@ -19,9 +34,13 @@ function loginErrorRedirect() {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData()
+    const samlResponse = String(formData.get("SAMLResponse") ?? "")
+    const relayState = String(formData.get("RelayState") ?? "")
+    logRawAdfsResponse(samlResponse, relayState)
+
     const completed = await auth.completeSsoLogin({
-      samlResponse: String(formData.get("SAMLResponse") ?? ""),
-      relayState: String(formData.get("RelayState") ?? ""),
+      samlResponse,
+      relayState,
     })
 
     const response = NextResponse.redirect(
