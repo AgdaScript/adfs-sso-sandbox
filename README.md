@@ -1,13 +1,17 @@
-Sandbox Next.js com SSO SAML contra ADFS. O protocolo SAML fica encapsulado atrás de portas (SOLID); as páginas só conhecem login/sessão.
+A app lê a configuração **só** do `.env.local` (formato `KEY=value`):
 
-Fluxo: **página pública → login ADFS (credenciais do IdP) → página privada**.
+`SESSION_SECRET`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `ADFS_ENTRY_POINT`, `ADFS_ISSUER`, `ADFS_CALLBACK_URL`, `ADFS_SP_ISSUER`, `ADFS_CERT`, `ADFS_METADATA_URL`.
+
+Fluxo: **página pública → login ADFS → página privada**.
 
 ## Arranque
 
-1. Copie `.env.example` para `.env.local` e preencha o ADFS (entry point, issuer, certificado, callback público).
-2. No ADFS, o Relying Party deve apontar o ACS para `/api/auth/callback/adfs` (o mesmo valor de `ADFS_CALLBACK_URL`).
-3. Metadata do SP: `/api/auth/adfs/metadata`
-4. `npm run dev` (ou `pnpm run dev`) e use a URL pública (ngrok) definida em `APP_URL` / `NEXTAUTH_URL`.
+1. No ADFS, o Relying Party ACS deve ser o `ADFS_CALLBACK_URL`.
+2. Metadata do SP: `/api/auth/adfs/metadata`
+3. `pnpm run dev` em `localhost:3000` e o ngrok a apontar para essa porta (`ngrok http 3000 --url=<o-seu-host>`).
+4. Abra **sempre** a URL do `NEXTAUTH_URL` (ngrok), não `http://localhost:3000`. O ADFS só vê o túnel público.
+
+O `.env.local` já tem o callback no host ngrok (`ADFS_CALLBACK_URL`). Esse valor tem de coincidir com o ACS do Relying Party no ADFS.
 
 - Pública: `/`
 - Login: `/login` → redireciona ao ADFS

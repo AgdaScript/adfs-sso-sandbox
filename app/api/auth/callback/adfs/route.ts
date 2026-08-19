@@ -13,7 +13,7 @@ export const runtime = "nodejs"
 function loginErrorRedirect() {
   const loginUrl = new URL(LOGIN_PATH, getAppBaseUrl())
   loginUrl.searchParams.set("error", "sso")
-  return NextResponse.redirect(loginUrl)
+  return NextResponse.redirect(loginUrl, 303)
 }
 
 export async function POST(request: Request) {
@@ -24,7 +24,10 @@ export async function POST(request: Request) {
       relayState: String(formData.get("RelayState") ?? ""),
     })
 
-    const response = NextResponse.redirect(new URL(completed.redirectTo, getAppBaseUrl()))
+    const response = NextResponse.redirect(
+      new URL(completed.redirectTo, getAppBaseUrl()),
+      303,
+    )
     response.cookies.set(
       SESSION_COOKIE_NAME,
       completed.token,

@@ -1,50 +1,56 @@
 import "server-only"
 
-import { ADFS_CALLBACK_PATH, getAppBaseUrl } from "../config"
+import { readAdfsEnv } from "./adfs-env"
+import { AdfsFederationMetadataReader } from "./adfs-metadata-reader"
+import { toPemCertificate, uniquePemCertificates } from "./pem-certificate"
 
 export type AdfsRuntimeConfig = {
   entryPoint: string
   idpIssuer: string
   callbackUrl: string
   spIssuer: string
-  idpCert: string
+  idpCert: string | string[]
   appBaseUrl: string
 }
 
-function requiredEnv(name: string): string {
-  const value = process.env[name]?.trim()
+export async function loadAdfsConfig(
+  metadataReader = new AdfsFederationMetadataReader(),
+): Promise<AdfsRuntimeConfig> {
+  const env = readAdfsEnv()
+  const certificates: string[] = []
 
-  if (!value) {
-    throw new Error(`${name} não está definida.`)
+  if (env.idpCertPem) {
+    certificates.push(toPemCertificate(env.idpCertPem))
   }
 
-  return value
-}
+  if (env.metadataUrl) {
+    try {
+      const fromMetadata = await metadataReader.readSigningCertificates(env.metadataUrl)
+      certificates.push(...fromMetadata)
+    } catch (error) {
+      if (!env.idpCertPem) {
+        throw error
+      }
 
-export function toPemCertificate(raw: string): string {
-  const normalized = raw.replace(/\\n/g, "\n").trim()
-
-  if (normalized.includes("BEGIN CERTIFICATE")) {
-    return normalized
+      console.error(
+        "ADFS_METADATA_URL indisponível; a usar ADFS_CERT do .env.local.",
+        error instanceof Error ? error.message : "erro desconhecido",
+      )
+    }
   }
 
-  const body = normalized.replace(/\s+/g, "")
-  const wrapped = body.match(/.{1,64}/g)?.join("\n") ?? body
+  const idpCert = uniquePemCertificates(certificates)
 
-  return `-----BEGIN CERTIFICATE-----\n${wrapped}\n-----END CERTIFICATE-----`
-}
-
-export function loadAdfsConfig(): AdfsRuntimeConfig {
-  const appBaseUrl = getAppBaseUrl()
-  const callbackUrl = process.env.ADFS_CALLBACK_URL?.trim() || `${appBaseUrl}${ADFS_CALLBACK_PATH}`
-  const spIssuer = process.env.ADFS_SP_ISSUER?.trim() || callbackUrl
+  if (idpCert.length === 0) {
+    throw new Error("Defina ADFS_CERT ou ADFS_METADATA_URL no .env.local.")
+  }
 
   return {
-    entryPoint: requiredEnv("ADFS_ENTRY_POINT"),
-    idpIssuer: requiredEnv("ADFS_ISSUER"),
-    callbackUrl,
-    spIssuer,
-    idpCert: toPemCertificate(requiredEnv("ADFS_CERT")),
-    appBaseUrl,
+    entryPoint: env.entryPoint,
+    idpIssuer: env.idpIssuer,
+    callbackUrl: env.callbackUrl,
+    spIssuer: env.spIssuer,
+    idpCert: idpCert.length === 1 ? idpCert[0] : idpCert,
+    appBaseUrl: env.appBaseUrl,
   }
 }

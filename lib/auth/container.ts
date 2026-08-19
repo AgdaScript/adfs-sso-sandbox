@@ -17,21 +17,29 @@ const sessions = new CookieSessionService(sessionCipher, sessionCookies)
 const profileMapper = new AdfsProfileMapper()
 
 function createIdentityProvider() {
-  return new AdfsSamlIdentityProvider(createAdfsSamlClient(loadAdfsConfig()), profileMapper)
+  return loadAdfsConfig().then(
+    (config) =>
+      new AdfsSamlIdentityProvider(createAdfsSamlClient(config), profileMapper),
+  )
 }
 
 export const auth = {
   sessions,
   cipher: sessionCipher,
   startSsoLogin: async (relayState?: string | null) => {
-    return createStartSsoLogin({ identityProvider: createIdentityProvider() })(relayState)
+    const identityProvider = await createIdentityProvider()
+    return createStartSsoLogin({ identityProvider })(relayState)
   },
   completeSsoLogin: async (input: { samlResponse: string; relayState?: string | null }) => {
+    const identityProvider = await createIdentityProvider()
     return createCompleteSsoLogin({
-      identityProvider: createIdentityProvider(),
+      identityProvider,
       sessions,
     })(input)
   },
-  getServiceProviderMetadata: () => createIdentityProvider().getServiceProviderMetadata(),
+  getServiceProviderMetadata: async () => {
+    const identityProvider = await createIdentityProvider()
+    return identityProvider.getServiceProviderMetadata()
+  },
   signOut: createSignOut({ sessions }),
 }

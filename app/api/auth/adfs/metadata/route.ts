@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth/container"
 export const runtime = "nodejs"
 
 export async function GET() {
-  const metadata = auth.getServiceProviderMetadata()
+  const metadata = await auth.getServiceProviderMetadata()
 
   return new NextResponse(metadata, {
     status: 200,

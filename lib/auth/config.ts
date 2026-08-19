@@ -8,36 +8,37 @@ export const ADFS_CALLBACK_PATH = "/api/auth/callback/adfs"
 export const ADFS_METADATA_PATH = "/api/auth/adfs/metadata"
 
 export function getSessionSecret(): string {
-  const secret = process.env.SESSION_SECRET
+  const secret = process.env.SESSION_SECRET ?? process.env.NEXTAUTH_SECRET
 
   if (!secret) {
-    throw new Error("SESSION_SECRET não está definida. Copie .env.example para .env.local.")
+    throw new Error("SESSION_SECRET ou NEXTAUTH_SECRET não está definida no .env.local.")
   }
 
   return secret
 }
 
 export function getAppBaseUrl(): string {
-  const url = process.env.APP_URL ?? process.env.NEXTAUTH_URL
+  const url = process.env.NEXTAUTH_URL ?? process.env.APP_URL
 
   if (!url) {
-    throw new Error("APP_URL ou NEXTAUTH_URL não está definida.")
+    throw new Error("NEXTAUTH_URL não está definida no .env.local.")
   }
 
   return url.replace(/\/$/, "")
 }
 
 export function usesSecureCookies(): boolean {
-  const url = process.env.APP_URL ?? process.env.NEXTAUTH_URL ?? ""
+  const url = process.env.NEXTAUTH_URL ?? process.env.APP_URL ?? ""
   return url.startsWith("https://") || process.env.NODE_ENV === "production"
 }
 
 export function isAdfsConfigured(): boolean {
   return Boolean(
-    process.env.ADFS_ENTRY_POINT &&
-      process.env.ADFS_CERT &&
-      (process.env.ADFS_CALLBACK_URL || process.env.APP_URL || process.env.NEXTAUTH_URL) &&
-      (process.env.ADFS_SP_ISSUER || process.env.APP_URL || process.env.NEXTAUTH_URL),
+    (process.env.SESSION_SECRET ?? process.env.NEXTAUTH_SECRET) &&
+      (process.env.NEXTAUTH_URL ?? process.env.APP_URL) &&
+      process.env.ADFS_ENTRY_POINT &&
+      process.env.ADFS_ISSUER &&
+      (process.env.ADFS_CERT || process.env.ADFS_METADATA_URL),
   )
 }
 

@@ -34,8 +34,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </a>
       ) : (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          SSO ADFS não está configurado. Preencha as variáveis no{" "}
-          <code className="font-mono">.env.local</code>.
+          SSO ADFS não encontrou as variáveis no{" "}
+          <code className="font-mono">.env.local</code>{" "}
+          (NEXTAUTH_URL, ADFS_ENTRY_POINT, ADFS_ISSUER, ADFS_CERT).
         </p>
       )}
     </PageFrame>
