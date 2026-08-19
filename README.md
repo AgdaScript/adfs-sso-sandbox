@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Sandbox Next.js com autenticação simples, responsabilidades isoladas (SOLID) e duas páginas: pública e privada. A porta `Authenticator` está pronta para ser trocada por ADFS mais tarde.
 
-## Getting Started
+## Arranque
 
-First, run the development server:
+Copie o ficheiro de ambiente e gere um segredo de sessão:
+
+```bash
+cp .env.example .env.local
+openssl rand -base64 32
+```
+
+Coloque o valor gerado em `SESSION_SECRET` no `.env.local` e execute:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Login de demo: `demo@local` / `demo123`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Página pública: `/`
+- Página privada: `/privado` (exige sessão)
+- Login: `/login`
 
-## Learn More
+## Estrutura de auth
 
-To learn more about Next.js, take a look at the following resources:
+As páginas não acedem a cookies nem a JWT. Cada módulo tem uma responsabilidade.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Camada | Papel |
+| --- | --- |
+| `lib/auth/ports.ts` | Contratos (Authenticator, SessionService, stores) |
+| `lib/auth/adapters/` | JWT, cookies, utilizadores em memória, verificação de password |
+| `lib/auth/use-cases/` | Sign-in e sign-out |
+| `lib/auth/dal.ts` | Verificação segura da sessão nos Server Components |
+| `proxy.ts` | Redirect otimista — não é a fronteira de segurança |
+| `app/actions/auth.ts` | Adaptador HTTP fino (formulários) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Para passar a ADFS, implemente `Authenticator` e mantenha as páginas, a DAL e o fluxo de cookie de sessão.
