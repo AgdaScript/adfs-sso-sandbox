@@ -48,6 +48,11 @@ export class AdfsProfileMapper {
       id,
       name,
       email: email ?? `${id}@adfs.local`,
+      nameID: profile.nameID || id,
+      nameIDFormat:
+        profile.nameIDFormat ||
+        "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      sessionIndex: profile.sessionIndex,
     }
   }
 }

@@ -10,7 +10,7 @@ export type AdfsRuntimeConfig = {
   callbackUrl: string
   spIssuer: string
   idpCert: string | string[]
-  appBaseUrl: string
+  logoutCallbackUrl: string
 }
 
 export async function loadAdfsConfig(
@@ -51,6 +51,6 @@ export async function loadAdfsConfig(
     callbackUrl: env.callbackUrl,
     spIssuer: env.spIssuer,
     idpCert: idpCert.length === 1 ? idpCert[0] : idpCert,
-    appBaseUrl: env.appBaseUrl,
+    logoutCallbackUrl: `${env.appBaseUrl}/api/auth/adfs/logout`,
   }
 }

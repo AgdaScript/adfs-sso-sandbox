@@ -6,6 +6,7 @@ export const PRIVATE_PATH_PREFIXES = ["/privado"] as const
 export const ADFS_LOGIN_PATH = "/api/auth/adfs/login"
 export const ADFS_CALLBACK_PATH = "/api/auth/callback/adfs"
 export const ADFS_METADATA_PATH = "/api/auth/adfs/metadata"
+export const ADFS_LOGOUT_PATH = "/api/auth/adfs/logout"
 
 export function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET ?? process.env.NEXTAUTH_SECRET

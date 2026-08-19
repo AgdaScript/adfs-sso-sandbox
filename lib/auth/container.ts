@@ -41,5 +41,17 @@ export const auth = {
     const identityProvider = await createIdentityProvider()
     return identityProvider.getServiceProviderMetadata()
   },
-  signOut: createSignOut({ sessions }),
+  completeLogout: async (input: {
+    samlRequest?: string
+    samlResponse?: string
+    originalQuery?: string
+  }) => {
+    await sessions.destroy()
+    const identityProvider = await createIdentityProvider()
+    return identityProvider.completeLogout(input)
+  },
+  signOut: async () => {
+    const identityProvider = await createIdentityProvider()
+    return createSignOut({ sessions, identityProvider })()
+  },
 }

@@ -26,7 +26,20 @@ function asSessionPayload(value: Record<string, unknown>): SessionPayload | null
     return null
   }
 
-  return { userId, name, email }
+  return {
+    userId,
+    name,
+    email,
+    nameID: typeof value.nameID === "string" && value.nameID ? value.nameID : userId,
+    nameIDFormat:
+      typeof value.nameIDFormat === "string" && value.nameIDFormat
+        ? value.nameIDFormat
+        : "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+    sessionIndex:
+      typeof value.sessionIndex === "string" && value.sessionIndex
+        ? value.sessionIndex
+        : undefined,
+  }
 }
 
 export class JoseSessionCipher implements SessionCipher {

@@ -12,6 +12,8 @@ export function createAdfsSamlClient(config: AdfsRuntimeConfig): SAML {
     audience: config.spIssuer,
     idpIssuer: config.idpIssuer,
     idpCert: config.idpCert,
+    logoutUrl: config.entryPoint,
+    logoutCallbackUrl: config.logoutCallbackUrl,
     identifierFormat: null,
     disableRequestedAuthnContext: true,
     wantAssertionsSigned: true,

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
 
+import { SessionNavSlot } from "@/app/components/session-nav"
+
 type PageFrameProps = {
   title: string
   description: string
@@ -20,12 +22,10 @@ export function PageFrame({ title, description, badge, children }: PageFrameProp
             <Link href="/" className="hover:text-zinc-950 dark:hover:text-zinc-50">
               Pública
             </Link>
-            <Link href="/privado" className="hover:text-zinc-950 dark:hover:text-zinc-50">
+            <Link href="/privado" prefetch={false} className="hover:text-zinc-950 dark:hover:text-zinc-50">
               Privada
             </Link>
-            <Link href="/login" className="hover:text-zinc-950 dark:hover:text-zinc-50">
-              Entrar
-            </Link>
+            <SessionNavSlot />
           </nav>
         </div>
       </header>

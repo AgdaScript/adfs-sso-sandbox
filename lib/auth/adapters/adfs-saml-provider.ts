@@ -1,10 +1,11 @@
 import "server-only"
 
-import type { SAML } from "@node-saml/node-saml"
+import type { Profile, SAML } from "@node-saml/node-saml"
 
-import type { SsoCallbackInput, User } from "../domain"
+import type { SloSubject, SsoCallbackInput, User } from "../domain"
 import { SsoAuthenticationError } from "../errors"
 import type { SsoIdentityProvider } from "../ports"
+import { LOGIN_PATH } from "../config"
 import type { AdfsProfileMapper } from "./adfs-profile-mapper"
 
 export class AdfsSamlIdentityProvider implements SsoIdentityProvider {
@@ -41,6 +42,53 @@ export class AdfsSamlIdentityProvider implements SsoIdentityProvider {
         cause: error,
       })
     }
+  }
+
+  async createLogoutRedirect(subject: SloSubject): Promise<string> {
+    const profile: Profile = {
+      issuer: subject.nameID,
+      nameID: subject.nameID,
+      nameIDFormat: subject.nameIDFormat,
+      sessionIndex: subject.sessionIndex,
+    }
+
+    return this.saml.getLogoutUrlAsync(profile, LOGIN_PATH, {})
+  }
+
+  async completeLogout(input: {
+    samlRequest?: string
+    samlResponse?: string
+    originalQuery?: string
+  }): Promise<string> {
+    try {
+      if (input.samlRequest) {
+        const { profile } = await this.saml.validatePostRequestAsync({
+          SAMLRequest: input.samlRequest,
+        })
+
+        if (profile) {
+          return this.saml.getLogoutResponseUrlAsync(profile, LOGIN_PATH, {}, true)
+        }
+      }
+
+      if (input.samlResponse && input.originalQuery) {
+        await this.saml.validateRedirectAsync(
+          { SAMLResponse: input.samlResponse },
+          input.originalQuery,
+        )
+      } else if (input.samlResponse) {
+        await this.saml.validatePostResponseAsync({
+          SAMLResponse: input.samlResponse,
+        })
+      }
+    } catch (error) {
+      console.error(
+        "Falha a concluir o SLO do ADFS; a sessão local já foi encerrada.",
+        error instanceof Error ? error.message : "erro desconhecido",
+      )
+    }
+
+    return LOGIN_PATH
   }
 
   getServiceProviderMetadata(): string {

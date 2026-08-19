@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { PageFrame } from "@/app/components/page-frame"
+import { SignOutButton } from "@/app/components/sign-out-button"
 import { getCurrentUser } from "@/lib/auth/dal"
 
 export default async function PublicPage() {
@@ -26,11 +27,14 @@ export default async function PublicPage() {
       <div className="flex flex-wrap gap-3">
         <Link
           href="/privado"
+          prefetch={false}
           className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
         >
           Ir para a página privada
         </Link>
-        {user ? null : (
+        {user ? (
+          <SignOutButton />
+        ) : (
           <Link
             href="/login"
             className="rounded-full border border-zinc-200 px-5 py-2.5 text-sm font-medium dark:border-zinc-800"

@@ -1,6 +1,7 @@
 import type {
   IssuedSession,
   SessionPayload,
+  SloSubject,
   SsoCallbackInput,
   User,
   UserId,
@@ -9,6 +10,12 @@ import type {
 export interface SsoIdentityProvider {
   createLoginRedirect(relayState: string): Promise<string>
   authenticateResponse(input: SsoCallbackInput): Promise<User>
+  createLogoutRedirect(subject: SloSubject): Promise<string>
+  completeLogout(input: {
+    samlRequest?: string
+    samlResponse?: string
+    originalQuery?: string
+  }): Promise<string>
   getServiceProviderMetadata(): string
 }
 
