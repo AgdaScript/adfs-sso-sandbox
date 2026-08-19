@@ -37,3 +37,8 @@ As páginas não acedem a cookies nem a JWT. Cada módulo tem uma responsabilida
 | `app/actions/auth.ts` | Adaptador HTTP fino (formulários) |
 
 Para passar a ADFS, implemente `Authenticator` e mantenha as páginas, a DAL e o fluxo de cookie de sessão.
+
+
+
+
+ngrok http 3000 --url=disorder-enticing-pouncing.ngrok-free.dev
