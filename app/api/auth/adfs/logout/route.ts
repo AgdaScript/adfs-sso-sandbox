@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { getAppBaseUrl, LOGIN_PATH } from "@/lib/auth/config"
 import { auth } from "@/lib/auth/container"
+import { sso } from "@/lib/sso/container"
 
 export const runtime = "nodejs"
 
@@ -19,8 +20,10 @@ async function handleLogout(input: {
   originalQuery?: string
 }) {
   try {
+    const chain = await sso.logoutChain.read()
     const redirectTo = await auth.completeLogout(input)
-    return NextResponse.redirect(toAbsoluteUrl(redirectTo), 303)
+    await sso.logoutChain.clear()
+    return NextResponse.redirect(toAbsoluteUrl(chain?.final ?? redirectTo), 303)
   } catch (error) {
     console.error(
       "Falha no callback de logout ADFS:",

@@ -2,9 +2,8 @@
 
 import { redirect } from "next/navigation"
 
-import { auth } from "@/lib/auth/container"
+import { OAUTH_LOGOUT_PATH } from "@/lib/sso/config"
 
 export async function signOutAction(): Promise<void> {
-  const { redirectTo } = await auth.signOut()
-  redirect(redirectTo)
+  redirect(OAUTH_LOGOUT_PATH)
 }

@@ -5,6 +5,15 @@ export type RegisteredClient = {
   name: string
   secret: string
   redirectUris: string[]
+  logoutUris: string[]
+}
+
+export type LogoutChain = {
+  remaining: string[]
+  final: string
+  nameID?: string
+  nameIDFormat?: string
+  sessionIndex?: string
 }
 
 export type PendingAuthorization = {
@@ -17,6 +26,7 @@ export type BrokerUser = {
   id: string
   name: string
   email: string
+  sid?: string
   claims: SamlClaims
 }
 
@@ -31,6 +41,7 @@ export type AccessTokenClaims = {
   sub: string
   name: string
   email: string
+  sid?: string
   claims: SamlClaims
   aud: string
   iss: string

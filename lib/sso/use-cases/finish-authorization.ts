@@ -32,6 +32,7 @@ export function createFinishAuthorization(deps: {
         id: session.userId,
         name: session.name,
         email: session.email,
+        sid: session.sid,
         claims: session.claims ?? {},
       },
     })

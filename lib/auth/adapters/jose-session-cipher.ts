@@ -39,6 +39,7 @@ function asSessionPayload(value: Record<string, unknown>): SessionPayload | null
       typeof value.sessionIndex === "string" && value.sessionIndex
         ? value.sessionIndex
         : undefined,
+    sid: typeof value.sid === "string" && value.sid ? value.sid : undefined,
     claims: asClaims(value.claims),
   }
 }

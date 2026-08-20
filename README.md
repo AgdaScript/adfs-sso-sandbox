@@ -39,6 +39,17 @@ Resposta: `access_token`, `id_token`, `token_type`, `expires_in`.
 
 5. Claims: `GET /oauth/userinfo` com `Authorization: Bearer {access_token}`.
 
+## Logout em todas as apps
+
+`GET /oauth/logout?post_logout_redirect_uri={url-da-app}`
+
+1. Invalida a sessão central deste serviço.
+2. Visita o `logoutUri` de cada cliente (a Random App usa `/auth/logout`).
+3. Faz Single Logout no ADFS.
+4. Volta à `post_logout_redirect_uri`.
+
+Sair numa app ou neste serviço desloga todas.
+
 Clientes já registados:
 
 - `app-exemplo` (demo neste serviço). Redirect: `{NEXTAUTH_URL}/app-exemplo/callback`.
@@ -67,4 +78,23 @@ A aplicação genérica `adfs-sso-random-app` corre à parte (`localhost:3001`).
 | `app/oauth/authorize` | Entrada das apps |
 | `app/oauth/token` | Troca code → JWT |
 | `app/oauth/userinfo` | Claims do access token |
+| `app/oauth/logout` | Logout global (apps + ADFS) |
 | `app/api/auth/callback/adfs` | ACS SAML (só este serviço) |
+sequenceDiagram
+  participant App as Random App :3001
+  participant SSO as Microsserviço SSO
+  participant ADFS as ADFS
+  App->>App: GET /privado (sem sessão)
+  App->>SSO: GET /oauth/authorize
+  SSO->>SSO: Ecrã /login
+  SSO->>ADFS: SAML (credenciais no ADFS)
+  alt OK
+    ADFS->>SSO: Asserção SAML
+    SSO->>App: redirect ?code=
+    App->>SSO: POST /oauth/token
+    SSO-->>App: JWT
+    App->>App: Abre /privado
+  else Recusado / cancelado
+    SSO->>App: redirect ?error=
+    App->>App: /privado continua protegida
+  end

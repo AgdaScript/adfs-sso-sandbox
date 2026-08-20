@@ -19,6 +19,7 @@ export type SessionPayload = {
   nameID: string
   nameIDFormat: string
   sessionIndex?: string
+  sid?: string
   claims: SamlClaims
 }
 

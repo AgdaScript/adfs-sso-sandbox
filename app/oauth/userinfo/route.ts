@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     sub: claims.sub,
     name: claims.name,
     email: claims.email,
+    sid: claims.sid,
     claims: claims.claims,
   })
 }

@@ -6,6 +6,7 @@ import { AdfsProfileMapper } from "./adapters/adfs-profile-mapper"
 import { createAdfsSamlClient } from "./adapters/adfs-saml-client"
 import { AdfsSamlIdentityProvider } from "./adapters/adfs-saml-provider"
 import { JoseSessionCipher } from "./adapters/jose-session-cipher"
+import { sidRevocation } from "./adapters/memory-sid-revocation"
 import { CookieSessionService } from "./services/cookie-session-service"
 import { createCompleteSsoLogin } from "./use-cases/complete-sso-login"
 import { createSignOut } from "./use-cases/sign-out"
@@ -13,7 +14,7 @@ import { createStartSsoLogin } from "./use-cases/start-sso-login"
 
 const sessionCipher = new JoseSessionCipher()
 const sessionCookies = new CookieSessionStore()
-const sessions = new CookieSessionService(sessionCipher, sessionCookies)
+const sessions = new CookieSessionService(sessionCipher, sessionCookies, sidRevocation)
 const profileMapper = new AdfsProfileMapper()
 
 function createIdentityProvider() {
@@ -53,5 +54,12 @@ export const auth = {
   signOut: async () => {
     const identityProvider = await createIdentityProvider()
     return createSignOut({ sessions, identityProvider })()
+  },
+  createLogoutRedirect: async (
+    subject: Parameters<AdfsSamlIdentityProvider["createLogoutRedirect"]>[0],
+    relayState?: string,
+  ) => {
+    const identityProvider = await createIdentityProvider()
+    return identityProvider.createLogoutRedirect(subject, relayState)
   },
 }

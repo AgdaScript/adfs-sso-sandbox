@@ -3,6 +3,7 @@ import "server-only"
 import { jwtVerify, SignJWT } from "jose"
 
 import { getSessionSecret } from "@/lib/auth/config"
+import { sidRevocation } from "@/lib/auth/adapters/memory-sid-revocation"
 import type { SamlClaims } from "@/lib/auth/domain"
 import { ACCESS_TOKEN_TTL_SECONDS, getSsoIssuer } from "../config"
 import type { AccessTokenClaims, BrokerUser, IssuedBrokerTokens } from "../domain"
@@ -22,6 +23,7 @@ export class JoseTokenIssuer implements TokenIssuer {
       name: input.user.name,
       email: input.user.email,
       claims: input.user.claims,
+      sid: input.user.sid,
       typ: "access",
     })
       .setProtectedHeader({ alg: "HS256" })
@@ -37,6 +39,7 @@ export class JoseTokenIssuer implements TokenIssuer {
       name: input.user.name,
       email: input.user.email,
       claims: input.user.claims,
+      sid: input.user.sid,
       typ: "id",
     })
       .setProtectedHeader({ alg: "HS256" })
@@ -70,6 +73,11 @@ export class JoseTokenIssuer implements TokenIssuer {
         return null
       }
 
+      const sid = typeof payload.sid === "string" ? payload.sid : undefined
+      if (sid && sidRevocation.isRevoked(sid)) {
+        return null
+      }
+
       const sub = typeof payload.sub === "string" ? payload.sub : null
       const name = typeof payload.name === "string" ? payload.name : null
       const email = typeof payload.email === "string" ? payload.email : null
@@ -86,6 +94,7 @@ export class JoseTokenIssuer implements TokenIssuer {
         email,
         aud,
         iss,
+        sid,
         claims: asClaims(payload.claims),
       }
     } catch {

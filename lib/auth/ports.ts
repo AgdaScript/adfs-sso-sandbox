@@ -10,7 +10,7 @@ import type {
 export interface SsoIdentityProvider {
   createLoginRedirect(relayState: string): Promise<string>
   authenticateResponse(input: SsoCallbackInput): Promise<User>
-  createLogoutRedirect(subject: SloSubject): Promise<string>
+  createLogoutRedirect(subject: SloSubject, relayState?: string): Promise<string>
   completeLogout(input: {
     samlRequest?: string
     samlResponse?: string
@@ -30,6 +30,11 @@ export interface SessionCookieStore {
   clear(): Promise<void>
 }
 
+export interface SidRevocationStore {
+  revoke(sid: string): void
+  isRevoked(sid: string): boolean
+}
+
 export interface SessionService {
   issue(user: User): Promise<IssuedSession>
   create(user: User): Promise<void>
@@ -37,4 +42,4 @@ export interface SessionService {
   destroy(): Promise<void>
 }
 
-export type { User, UserId, SessionPayload, SsoCallbackInput, IssuedSession }
+export type { User, UserId, SessionPayload, SsoCallbackInput, IssuedSession, SloSubject }

@@ -45,7 +45,7 @@ export class AdfsSamlIdentityProvider implements SsoIdentityProvider {
     }
   }
 
-  async createLogoutRedirect(subject: SloSubject): Promise<string> {
+  async createLogoutRedirect(subject: SloSubject, relayState = LOGIN_PATH): Promise<string> {
     const profile: Profile = {
       issuer: subject.nameID,
       nameID: subject.nameID,
@@ -53,7 +53,7 @@ export class AdfsSamlIdentityProvider implements SsoIdentityProvider {
       sessionIndex: subject.sessionIndex,
     }
 
-    return this.saml.getLogoutUrlAsync(profile, LOGIN_PATH, {})
+    return this.saml.getLogoutUrlAsync(profile, relayState, {})
   }
 
   async completeLogout(input: {

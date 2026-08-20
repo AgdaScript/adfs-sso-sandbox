@@ -2,6 +2,7 @@ import type {
   AccessTokenClaims,
   BrokerUser,
   IssuedBrokerTokens,
+  LogoutChain,
   PendingAuthorization,
   RegisteredClient,
 } from "./domain"
@@ -9,11 +10,18 @@ import type {
 export interface ClientRegistry {
   findById(clientId: string): RegisteredClient | null
   authenticate(clientId: string, clientSecret: string): RegisteredClient | null
+  list(): RegisteredClient[]
 }
 
 export interface PendingAuthorizationStore {
   read(): Promise<PendingAuthorization | null>
   write(pending: PendingAuthorization): Promise<void>
+  clear(): Promise<void>
+}
+
+export interface LogoutChainStore {
+  read(): Promise<LogoutChain | null>
+  write(chain: LogoutChain): Promise<void>
   clear(): Promise<void>
 }
 

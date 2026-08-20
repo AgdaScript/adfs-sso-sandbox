@@ -3,13 +3,26 @@ import "server-only"
 import {
   DEFAULT_CLIENT_ID,
   RANDOM_APP_CLIENT_ID,
+  deriveLogoutUris,
   getDefaultClientRedirectUri,
   getDefaultClientSecret,
   getRandomAppClientSecret,
+  getRandomAppLogoutUri,
   getRandomAppRedirectUri,
 } from "../config"
 import type { RegisteredClient } from "../domain"
 import type { ClientRegistry } from "../ports"
+
+function parseOptionalUris(value: string | undefined, fallback: string[]): string[] {
+  if (!value) {
+    return fallback
+  }
+
+  return value
+    .split(",")
+    .map((uri) => uri.trim())
+    .filter(Boolean)
+}
 
 function parseRedirectUris(value: string | undefined, fallback: string): string[] {
   if (!value) {
@@ -37,28 +50,40 @@ export class EnvClientRegistry implements ClientRegistry {
     return client
   }
 
+  list(): RegisteredClient[] {
+    return this.all()
+  }
+
   private all(): RegisteredClient[] {
     const byId = new Map<string, RegisteredClient>()
     const demoId = process.env.SSO_CLIENT_ID ?? DEFAULT_CLIENT_ID
     const randomAppId = process.env.SSO_RANDOM_APP_CLIENT_ID ?? RANDOM_APP_CLIENT_ID
 
+    const demoRedirects = parseRedirectUris(
+      process.env.SSO_CLIENT_REDIRECT_URI,
+      getDefaultClientRedirectUri(),
+    )
+    const randomRedirects = parseRedirectUris(
+      process.env.SSO_RANDOM_APP_REDIRECT_URI,
+      getRandomAppRedirectUri(),
+    )
+
     byId.set(demoId, {
       id: demoId,
       name: process.env.SSO_CLIENT_NAME ?? "App Exemplo",
       secret: getDefaultClientSecret(),
-      redirectUris: parseRedirectUris(
-        process.env.SSO_CLIENT_REDIRECT_URI,
-        getDefaultClientRedirectUri(),
-      ),
+      redirectUris: demoRedirects,
+      logoutUris: parseOptionalUris(process.env.SSO_CLIENT_LOGOUT_URI, deriveLogoutUris(demoRedirects)),
     })
 
     byId.set(randomAppId, {
       id: randomAppId,
       name: process.env.SSO_RANDOM_APP_NAME ?? "Random App",
       secret: getRandomAppClientSecret(),
-      redirectUris: parseRedirectUris(
-        process.env.SSO_RANDOM_APP_REDIRECT_URI,
-        getRandomAppRedirectUri(),
+      redirectUris: randomRedirects,
+      logoutUris: parseOptionalUris(
+        process.env.SSO_RANDOM_APP_LOGOUT_URI,
+        [getRandomAppLogoutUri()],
       ),
     })
 
@@ -105,10 +130,13 @@ function toClient(value: unknown): RegisteredClient | null {
   const redirectUris = Array.isArray(record.redirectUris)
     ? record.redirectUris.filter((uri): uri is string => typeof uri === "string" && uri.length > 0)
     : []
+  const logoutUris = Array.isArray(record.logoutUris)
+    ? record.logoutUris.filter((uri): uri is string => typeof uri === "string" && uri.length > 0)
+    : deriveLogoutUris(redirectUris)
 
   if (!id || !secret || redirectUris.length === 0 || !name) {
     return null
   }
 
-  return { id, name, secret, redirectUris }
+  return { id, name, secret, redirectUris, logoutUris }
 }
