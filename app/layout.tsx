@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ADFS SSO Sandbox",
-  description: "Sandbox de autenticação Next.js com responsabilidades isoladas.",
+  title: "SSO Service",
+  description: "Microsserviço de autenticação ADFS para aplicações internas.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

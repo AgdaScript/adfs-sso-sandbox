@@ -7,6 +7,7 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/lib/auth/config"
 import { auth } from "@/lib/auth/container"
+import { sso } from "@/lib/sso/container"
 
 export const runtime = "nodejs"
 
@@ -25,7 +26,12 @@ function logRawAdfsResponse(samlResponse: string, relayState: string) {
   console.log("[ADFS] SAMLResponse XML:\n", xml)
 }
 
-function loginErrorRedirect() {
+async function loginErrorRedirect() {
+  const denied = await sso.denyAuthorization("sso")
+  if (denied.redirectTo !== "/") {
+    return NextResponse.redirect(new URL(denied.redirectTo, getAppBaseUrl()), 303)
+  }
+
   const loginUrl = new URL(LOGIN_PATH, getAppBaseUrl())
   loginUrl.searchParams.set("error", "sso")
   return NextResponse.redirect(loginUrl, 303)

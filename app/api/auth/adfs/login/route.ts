@@ -5,9 +5,7 @@ import { auth } from "@/lib/auth/container"
 
 export const runtime = "nodejs"
 
-export async function GET(request: Request) {
-  const from = new URL(request.url).searchParams.get("from")
-
+async function startLogin(from: string | null) {
   try {
     const redirectUrl = await auth.startSsoLogin(from)
     return NextResponse.redirect(redirectUrl)
@@ -20,4 +18,13 @@ export async function GET(request: Request) {
     loginUrl.searchParams.set("error", "sso")
     return NextResponse.redirect(loginUrl)
   }
+}
+
+export async function GET(request: Request) {
+  return startLogin(new URL(request.url).searchParams.get("from"))
+}
+
+export async function POST(request: Request) {
+  const formData = await request.formData()
+  return startLogin(String(formData.get("from") ?? "") || null)
 }

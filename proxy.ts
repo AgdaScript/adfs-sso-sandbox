@@ -5,7 +5,7 @@ import {
   readOptimisticSession,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth/optimistic-session"
-import { isLoginPath, isPrivatePath } from "@/lib/auth/route-policy"
+import { isLoginPath, isPrivatePath, safeInternalPath } from "@/lib/auth/route-policy"
 
 export async function proxy(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value
@@ -19,7 +19,9 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isLoginPath(pathname) && session) {
-    return NextResponse.redirect(new URL(PRIVATE_HOME_PATH, request.nextUrl))
+    const from = request.nextUrl.searchParams.get("from")
+    const destination = from ? safeInternalPath(from) : PRIVATE_HOME_PATH
+    return NextResponse.redirect(new URL(destination, request.nextUrl))
   }
 
   return NextResponse.next()
